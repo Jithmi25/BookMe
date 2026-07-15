@@ -19,6 +19,9 @@ on:
       - ".github/workflows/web-deploy.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   web-checks:
     runs-on: ubuntu-latest
