@@ -40,4 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-IMPLEMENTATION_PLAN_WEB.md 
+.vscode
