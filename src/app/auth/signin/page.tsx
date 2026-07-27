@@ -1,9 +1,34 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
 import logo from "@/assest/images/logo.png";
+import { useAuthContext } from "@/context/AuthContext.tsx";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const { signInWithEmail, error } = useAuthContext();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await signInWithEmail(email, password);
+      router.push("/");
+    } catch {
+      // error already captured in AuthContext's `error` state
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-6 py-10 sm:px-10 lg:px-12">
       <section className="grid w-full gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-12">
@@ -34,7 +59,7 @@ export default function SignInPage() {
         </div>
 
         <div className="rounded-[2rem] border border-border bg-white p-8 shadow-xl shadow-brand/10">
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="email"
@@ -48,6 +73,9 @@ export default function SignInPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="mt-2 w-full rounded-2xl border border-border bg-white px-4 py-3 text-foreground outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/15"
               />
             </div>
@@ -65,22 +93,28 @@ export default function SignInPage() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="mt-2 w-full rounded-2xl border border-border bg-white px-4 py-3 text-foreground outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/15"
               />
             </div>
 
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
             <button
               type="submit"
-              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-brand px-6 font-semibold text-white shadow-lg shadow-brand/20 transition-transform hover:-translate-y-0.5 hover:bg-brand-strong"
+              disabled={submitting}
+              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-brand px-6 font-semibold text-white shadow-lg shadow-brand/20 transition-transform hover:-translate-y-0.5 hover:bg-brand-strong disabled:opacity-60"
             >
-              Sign in
+              {submitting ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-foreground/70">
             New to BookMe?{" "}
             <Link
-              href="/signup"
+              href="/auth/signup"
               className="font-semibold text-brand-strong hover:underline"
             >
               Create an account
