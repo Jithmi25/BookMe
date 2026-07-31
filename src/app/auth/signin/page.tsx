@@ -34,10 +34,7 @@ export default function SignInPage() {
       <section className="grid w-full gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-12">
         <div className="flex flex-col justify-center rounded-[2rem] border border-border bg-white/80 p-8 shadow-xl shadow-brand/10 backdrop-blur">
           <div className="inline-flex w-fit items-center gap-3 rounded-full border border-border bg-brand-soft px-4 py-2">
-            <Image src={logo} alt="BookMe logo" width={34} height={34} />
-            <span className="text-sm font-semibold text-brand-strong">
-              BookMe
-            </span>
+            <Image src={logo} alt="BookMe logo" width={64} height={64} />
           </div>
 
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-foreground">
@@ -47,15 +44,6 @@ export default function SignInPage() {
             Sign in to manage bookings, keep your schedule organized, and
             continue in the same green-branded experience.
           </p>
-
-          <div className="mt-8 grid gap-4 text-sm text-foreground/72 sm:grid-cols-2">
-            <div className="rounded-2xl border border-border bg-brand-soft/60 p-4">
-              Secure access and a clean login flow.
-            </div>
-            <div className="rounded-2xl border border-border bg-white p-4">
-              Designed to match the logo palette.
-            </div>
-          </div>
         </div>
 
         <div className="rounded-[2rem] border border-border bg-white p-8 shadow-xl shadow-brand/10">

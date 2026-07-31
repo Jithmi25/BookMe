@@ -29,7 +29,7 @@ const DAY_LABELS: { key: keyof WeeklyAvailability; label: string }[] = [
 
 function EditProviderProfileForm() {
   const router = useRouter();
-  const { firebaseUser } = useAuthContext();
+  const { firebaseUser, appUser } = useAuthContext();
 
   const [loadingExisting, setLoadingExisting] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -115,6 +115,7 @@ function EditProviderProfileForm() {
         {
           providerId: firebaseUser.uid,
           userId: firebaseUser.uid,
+          name: appUser?.name ?? "",
           skills,
           serviceAreas,
           experienceYears,

@@ -17,6 +17,8 @@ export type WeeklyAvailability = {
 export interface Provider {
   providerId: string; // same as userId — one provider profile per user
   userId: string;
+  name: string; // denormalized from users/{uid}.name so public reads don't
+  // need access to the private users collection
   skills: string[];
   serviceAreas: string[];
   experienceYears: number;
@@ -24,8 +26,8 @@ export interface Provider {
   priceMin: number;
   priceMax: number;
   bio: string | null;
-  profilePhotoUrl: string | null; // set on Day 8 once Storage upload lands
-  nicDocUrl: string | null; // set on Day 8
+  profilePhotoUrl: string | null;
+  nicDocUrl: string | null; // private — never rendered on the public page
   ratingAvg: number;
   ratingCount: number;
   nicVerified: boolean;
