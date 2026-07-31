@@ -60,13 +60,13 @@ export default function Home() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/signin"
+              href="/auth/signin"
               className="inline-flex h-12 items-center justify-center rounded-full bg-brand px-6 font-semibold text-white shadow-lg shadow-brand/20 transition-transform hover:-translate-y-0.5 hover:bg-brand-strong"
             >
               Sign in
             </Link>
             <Link
-              href="/signup"
+              href="/auth/signup"
               className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-white/80 px-6 font-semibold text-foreground transition-colors hover:border-brand hover:bg-brand-soft"
             >
               Create account
