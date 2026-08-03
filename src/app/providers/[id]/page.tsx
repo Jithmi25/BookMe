@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Provider } from "@/types/provider";
+import { useAuthContext } from "@/context/AuthContext";
+import { AvailabilityDisplay } from "@/components/providers/AvailabilityDisplay";
+import { ReviewsSection } from "@/components/providers/ReviewsSection";
 
 export default function PublicProviderProfilePage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { firebaseUser, appUser } = useAuthContext();
   const [provider, setProvider] = useState<Provider | null | "not-found">(null);
 
   useEffect(() => {
@@ -31,6 +36,19 @@ export default function PublicProviderProfilePage() {
       </main>
     );
   }
+
+  function handleBookNow() {
+    if (!firebaseUser) {
+      router.push(
+        `/auth/signin?redirect=/bookings/create/${provider.providerId}`,
+      );
+      return;
+    }
+    router.push(`/bookings/create/${provider.providerId}`);
+  }
+
+  const isOwnProfile = firebaseUser?.uid === provider.providerId;
+  const isProvider = appUser?.role === "provider";
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
@@ -122,14 +140,40 @@ export default function PublicProviderProfilePage() {
           </div>
         )}
 
-        {/* Booking flow lands in Phase 5 (Days 10-11) — placeholder for now */}
-        <button
-          type="button"
-          disabled
-          className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand px-6 font-semibold text-white opacity-50"
-        >
-          Book now (coming soon)
-        </button>
+        <div className="mt-6">
+          <h2 className="text-sm font-medium text-foreground/70">
+            Weekly availability
+          </h2>
+          <div className="mt-2">
+            <AvailabilityDisplay availability={provider.availability} />
+          </div>
+        </div>
+
+        {isOwnProfile ? (
+          <p className="mt-8 text-center text-sm text-foreground/50">
+            This is your own profile — customers see a &quot;Book now&quot;
+            button here.
+          </p>
+        ) : isProvider ? (
+          <p className="mt-8 text-center text-sm text-foreground/50">
+            Only customers can book providers.
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={handleBookNow}
+            className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand px-6 font-semibold text-white shadow-lg shadow-brand/20 hover:bg-brand-strong"
+          >
+            Book now
+          </button>
+        )}
+
+        <div className="mt-10 border-t border-border pt-6">
+          <h2 className="text-lg font-semibold text-foreground">Reviews</h2>
+          <div className="mt-4">
+            <ReviewsSection providerId={provider.providerId} />
+          </div>
+        </div>
       </div>
     </main>
   );
