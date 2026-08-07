@@ -18,7 +18,7 @@ Build a simple, trusted, and location-aware platform where:
 
 ## User Types
 
-### 1) Customers 👥
+### 1) Customers 🧔🏻‍♂️
 
 Customers can:
 
@@ -34,7 +34,7 @@ Customers can:
 - Pay using cash or digital methods
 - Leave a review after service completion
 
-### 2) Service Providers 🛠️
+### 2) Service Providers 👨🏻‍🔧
 
 Service providers can:
 
