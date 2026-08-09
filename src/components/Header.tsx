@@ -60,12 +60,20 @@ export function Header() {
           ) : (
             <>
               {appUser.role === "provider" && (
-                <Link
-                  href="/providers/profile/view"
-                  className="text-sm font-medium text-foreground/80 hover:text-foreground"
-                >
-                  My profile
-                </Link>
+                <>
+                  <Link
+                    href="/provider/dashboard"
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/providers/profile/view"
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground"
+                  >
+                    My profile
+                  </Link>
+                </>
               )}
               <span className="text-sm text-foreground/60">
                 Hi, {appUser.name.split(" ")[0]}
