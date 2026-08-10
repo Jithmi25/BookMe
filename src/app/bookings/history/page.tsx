@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -72,6 +73,14 @@ function BookingHistoryContent() {
             <p className="mt-1 text-sm text-foreground/60">
               {booking.date} at {booking.time}
             </p>
+            {booking.status === "completed" && (
+              <Link
+                href={`/reviews/create/${booking.bookingId}`}
+                className="mt-2 inline-block text-sm font-medium text-brand-strong hover:underline"
+              >
+                Leave a review
+              </Link>
+            )}
           </div>
         ))}
       </div>

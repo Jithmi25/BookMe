@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   collection,
   query,
@@ -90,6 +91,13 @@ export function ReviewsSection({ providerId }: { providerId: string }) {
           </div>
         ))}
       </div>
+
+      <Link
+        href={`/reviews/list/${providerId}`}
+        className="mt-4 inline-block text-sm font-medium text-brand-strong hover:underline"
+      >
+        See all reviews →
+      </Link>
     </div>
   );
 }
