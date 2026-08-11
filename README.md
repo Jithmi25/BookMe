@@ -44,3 +44,62 @@ Service providers can:
 - Accept or reject bookings
 - View earnings
 - See customer ratings and feedback
+
+## Development Environment Setup
+
+### Prerequisites
+
+- Node.js 18+ (verify: `node -v`)
+- Firebase CLI (install: `npm install -g firebase-tools`)
+- Git and GitHub account
+- Stripe account (for payments) or PayHere account
+- Text editor: VS Code (recommended)
+
+### Local Development Workflow
+
+**1. Clone and Setup:**
+
+```bash
+cd c:\Users\WW\Desktop\Documents\Projects\BookMe
+git clone <repo-url> # or initialize if starting fresh
+cd web
+npm install
+```
+
+**2. Environment Setup:**
+
+```bash
+# Copy example env file
+cp .env.example .env.local
+
+# Add your Firebase dev keys to .env.local
+# NEXT_PUBLIC_FIREBASE_API_KEY_DEV=...
+# etc.
+```
+
+**3. Run Development Server:**
+
+```bash
+npm run dev
+# Opens http://localhost:3000
+```
+
+**4. Firebase Emulator (optional, for local Firestore testing):**
+
+```bash
+firebase emulators:start
+# In another terminal, run Next.js with emulator env:
+FIREBASE_EMULATOR_HOST=localhost:8080 npm run dev
+```
+
+**5. Deploy:**
+
+```bash
+# To staging/dev
+vercel --prod=false
+
+# To production
+vercel --prod
+```
+
+---
