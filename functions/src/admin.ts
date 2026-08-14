@@ -72,3 +72,38 @@ export const setUserSuspended = onCall(async (request) => {
 
   return { success: true };
 });
+
+/**
+ * Admins aren't the customer or provider on a disputed booking, so the
+ * existing Firestore rules (correctly) block them from writing to it
+ * directly. Rather than punching an admin-claim hole into the bookings
+ * rules, this goes through a Cloud Function like every other privileged
+ * write in this app (accept/reject/complete/verifyProvider all work the
+ * same way) — one consistent place where admin authorization is checked,
+ * instead of scattered across rules and functions.
+ */
+export const resolveDispute = onCall(async (request) => {
+  assertIsAdmin(request);
+
+  const { bookingId, resolution } = request.data as {
+    bookingId: string;
+    resolution: "resolved" | "dismissed";
+  };
+
+  if (resolution !== "resolved" && resolution !== "dismissed") {
+    throw new HttpsError(
+      "invalid-argument",
+      "resolution must be 'resolved' or 'dismissed'",
+    );
+  }
+
+  const bookingRef = db.collection("bookings").doc(bookingId);
+  const bookingSnap = await bookingRef.get();
+  if (!bookingSnap.exists) {
+    throw new HttpsError("not-found", "Booking not found");
+  }
+
+  await bookingRef.update({ disputeStatus: resolution });
+
+  return { success: true };
+});
