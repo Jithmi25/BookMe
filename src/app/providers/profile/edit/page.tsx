@@ -49,11 +49,19 @@ function EditProviderProfileForm() {
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const [nicDocUrl, setNicDocUrl] = useState<string | null>(null);
 
+  // True until we've confirmed a providers/{uid} doc already exists. Matters
+  // for the save below: nicVerified/photoVerified/ratingAvg/etc. must only
+  // be defaulted on the very first save — writing them on every save would
+  // silently wipe out an admin's approval the next time the provider edits
+  // their bio.
+  const [isNewProfile, setIsNewProfile] = useState(true);
+
   useEffect(() => {
     async function loadExisting() {
       if (!firebaseUser) return;
       const snap = await getDoc(doc(db, "providers", firebaseUser.uid));
       if (snap.exists()) {
+        setIsNewProfile(false);
         const data = snap.data() as Provider;
         setSkills(data.skills ?? []);
         setServiceAreas(data.serviceAreas ?? []);
@@ -110,31 +118,44 @@ function EditProviderProfileForm() {
     setSaving(true);
     setError(null);
     try {
+      const baseFields = {
+        providerId: firebaseUser.uid,
+        userId: firebaseUser.uid,
+        name: appUser?.name ?? "",
+        skills,
+        serviceAreas,
+        experienceYears,
+        availability,
+        priceMin,
+        priceMax,
+        bio: bio.trim() || null,
+        profilePhotoUrl,
+        nicDocUrl,
+        updatedAt: serverTimestamp(),
+      };
+
+      // nicVerified/photoVerified/ratingAvg/ratingCount/totalEarnings are
+      // admin- or system-owned fields (set via the verifyProvider Cloud
+      // Function, or by completed bookings/reviews). They must only be
+      // defaulted here on the very first save — including them on every
+      // save, as an earlier version of this form did despite its own
+      // comment claiming otherwise, would silently overwrite an admin's
+      // verification approval the next time the provider edited their bio.
+      // createdAt has the same issue: serverTimestamp() on every merge
+      // would keep bumping it forward on every edit.
       await setDoc(
         doc(db, "providers", firebaseUser.uid),
-        {
-          providerId: firebaseUser.uid,
-          userId: firebaseUser.uid,
-          name: appUser?.name ?? "",
-          skills,
-          serviceAreas,
-          experienceYears,
-          availability,
-          priceMin,
-          priceMax,
-          bio: bio.trim() || null,
-          profilePhotoUrl,
-          nicDocUrl,
-          // nicVerified/photoVerified are admin-set (Phase 9) — never
-          // overwritten here, so we only set them on first creation.
-          ratingAvg: 0,
-          ratingCount: 0,
-          nicVerified: false,
-          photoVerified: false,
-          totalEarnings: 0,
-          updatedAt: serverTimestamp(),
-          createdAt: serverTimestamp(),
-        },
+        isNewProfile
+          ? {
+              ...baseFields,
+              ratingAvg: 0,
+              ratingCount: 0,
+              nicVerified: false,
+              photoVerified: false,
+              totalEarnings: 0,
+              createdAt: serverTimestamp(),
+            }
+          : baseFields,
         { merge: true },
       );
       router.push("/providers/profile/view");

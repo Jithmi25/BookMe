@@ -11,22 +11,29 @@ export type PaymentStatus = "pending" | "completed" | "failed";
 export interface Booking {
   bookingId: string;
   customerId: string;
-  customerName: string; // denormalized — same reasoning as Provider.name
+  customerName: string;
   providerId: string;
-  providerName: string; // denormalized, shown in the customer's booking history
+  providerName: string;
   category: string;
   date: string; // "YYYY-MM-DD"
   time: string; // "HH:MM"
   note: string;
   status: BookingStatus;
   paymentMethod: PaymentMethod;
-  // Pricing is finalized once the provider accepts (Phase 6 Cloud Function) —
-  // null at creation time since the booking form doesn't collect a price.
   amount: number | null;
   commissionAmount: number | null;
   providerEarning: number | null;
   paymentId: string | null;
   paymentStatus: PaymentStatus;
+  // Disputes: the plan specs an /admin/disputes page but never defines a
+  // dispute schema anywhere. Rather than invent a whole new collection with
+  // its own rules and pages, disputes are modeled as a flag directly on the
+  // booking — either party can raise one, admin reviews and resolves it.
+  // Refunds aren't wired here since Stripe isn't connected yet (Phase 10).
+  disputed: boolean;
+  disputeReason: string | null;
+  disputeRaisedBy: "customer" | "provider" | null;
+  disputeResolved: boolean;
   createdAt: number;
   acceptedAt: number | null;
   completedAt: number | null;

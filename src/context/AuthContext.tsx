@@ -172,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: firebaseUser.email ?? null,
         phone: firebaseUser.phoneNumber ?? null,
         profilePhoto: null,
+        suspended: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       },

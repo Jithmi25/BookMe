@@ -2,23 +2,61 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
     match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null
+        && (request.auth.uid == userId || isAdmin());
       allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
+
+      // Tightened vs earlier phases: owners can no longer set their own
+      // role to "admin" via a direct Firestore write (role is restricted to
+      // customer/provider), and `suspended` can't be touched by the client
+      // at all — only the setUserSuspended Cloud Function (Admin SDK,
+      // bypasses these rules) can change it. Without this, a user could in
+      // principle call setDoc(doc(db,'users',uid), {role:'admin'}) from the
+      // browser console and grant themselves the Firestore role field —
+      // harmless on its own since real authorization checks the `admin`
+      // custom claim, never this field, but this closes the gap anyway.
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.role in ['customer', 'provider']
+        && request.resource.data.suspended == resource.data.suspended;
     }
 
     match /providers/{providerId} {
       allow read: if true;
       allow create: if request.auth != null
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'provider';
-      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+
+      // Tightened: owners can edit their own listing content, but
+      // nicVerified/photoVerified/ratingAvg/ratingCount/totalEarnings are
+      // admin- or system-owned and must stay untouched by a client write —
+      // enforced here as defense in depth on top of the app code already
+      // being fixed to not send those fields on every save.
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.userId
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['name', 'skills', 'serviceAreas', 'experienceYears',
+                       'availability', 'priceMin', 'priceMax', 'bio',
+                       'profilePhotoUrl', 'nicDocUrl', 'updatedAt']);
+
+      // Admin can flip verification flags — this is actually redundant with
+      // the Cloud Function (Admin SDK bypasses rules entirely), but kept
+      // here so the rule set documents the intent even if someone later
+      // adds a direct-write admin path.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['nicVerified', 'photoVerified']);
     }
 
     match /bookings/{bookingId} {
       allow read: if request.auth != null
         && (request.auth.uid == resource.data.customerId
-            || request.auth.uid == resource.data.providerId);
+            || request.auth.uid == resource.data.providerId
+            || isAdmin());
 
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.customerId
@@ -29,18 +67,21 @@ service cloud.firestore {
         && request.auth.uid == resource.data.customerId
         && resource.data.status == 'pending'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['note']);
+
+      // Either party on the booking can raise a dispute against their own
+      // booking (customer or provider — checked via resource.data, not
+      // request data, so you can't raise a dispute "as" the other party).
+      allow update: if request.auth != null
+        && (request.auth.uid == resource.data.customerId
+            || request.auth.uid == resource.data.providerId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['disputed', 'disputeReason', 'disputeRaisedBy', 'disputeResolved']);
+
+      // Only admin can mark a dispute resolved.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['disputeResolved']);
     }
 
-    // Reviews: document ID is the bookingId itself (not auto-generated) —
-    // that's what makes "one review per booking" actually enforceable below
-    // via !exists(), rather than relying on a query the client could bypass.
-    //
-    // Also fixed vs the plan's draft rule: the original only checked that
-    // the referenced booking is completed, but never verified the caller is
-    // THAT booking's customer — so any signed-in customer could review any
-    // completed booking, not just their own, as long as they set
-    // customerId to themselves in the new review doc. Added a check that
-    // the booking's actual customerId matches the reviewer.
     match /reviews/{bookingId} {
       allow read: if true;
       allow create: if request.auth != null

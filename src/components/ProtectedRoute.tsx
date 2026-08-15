@@ -37,6 +37,12 @@ export function ProtectedRoute({
       return;
     }
 
+    // Suspended by an admin — block everything behind ProtectedRoute
+    if (appUser.suspended) {
+      router.push("/suspended");
+      return;
+    }
+
     // Signed in with a role, but not one this page allows
     if (allowedRoles && !allowedRoles.includes(appUser.role)) {
       router.push("/");
@@ -45,6 +51,7 @@ export function ProtectedRoute({
 
   if (loading) return <div>Loading...</div>;
   if (!firebaseUser || !appUser?.role) return null;
+  if (appUser.suspended) return null;
   if (allowedRoles && !allowedRoles.includes(appUser.role)) return null;
 
   return <>{children}</>;
