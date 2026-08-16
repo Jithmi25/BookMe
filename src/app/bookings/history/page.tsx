@@ -73,6 +73,16 @@ function BookingHistoryContent() {
             <p className="mt-1 text-sm text-foreground/60">
               {booking.date} at {booking.time}
             </p>
+            {booking.status === "accepted" &&
+              booking.paymentMethod === "digital" &&
+              booking.paymentStatus !== "completed" && (
+                <Link
+                  href={`/payments/checkout/${booking.bookingId}`}
+                  className="mt-2 inline-block text-sm font-medium text-brand-strong hover:underline"
+                >
+                  Pay LKR {booking.amount} now
+                </Link>
+              )}
             {booking.status === "completed" && (
               <Link
                 href={`/reviews/create/${booking.bookingId}`}

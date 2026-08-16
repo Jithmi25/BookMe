@@ -197,7 +197,7 @@ function CreateBookingForm() {
                   : "border-border text-foreground/70"
               }`}
             >
-              Digital payment
+              Pay online (PayHere)
             </button>
           </div>
         </fieldset>
