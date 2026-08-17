@@ -8,8 +8,17 @@
  *      node scripts/seedDummyProviders.js
  */
 
-const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
+import fs from "node:fs";
+import path from "node:path";
+import admin from "firebase-admin";
+
+const serviceAccountPath = path.resolve(
+  process.cwd(),
+  "scripts/serviceAccountKey.json",
+);
+const serviceAccount = JSON.parse(
+  fs.readFileSync(serviceAccountPath, "utf-8"),
+);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
