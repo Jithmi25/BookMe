@@ -19,7 +19,13 @@ export function Header() {
     <header className="border-b border-border bg-white">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2">
-          <Image src={logo} alt="BookMe logo" width={28} height={28} />
+          <Image
+            src={logo}
+            alt="BookMe logo"
+            width={28}
+            height={28}
+            style={{ height: "auto" }}
+          />
           <span className="text-sm font-semibold text-brand-strong">
             BookMe
           </span>

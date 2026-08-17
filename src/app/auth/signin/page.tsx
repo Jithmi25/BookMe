@@ -34,7 +34,13 @@ export default function SignInPage() {
       <section className="grid w-full gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-12">
         <div className="flex flex-col justify-center rounded-[2rem] border border-border bg-white/80 p-8 shadow-xl shadow-brand/10 backdrop-blur">
           <div className="inline-flex w-fit items-center gap-3 rounded-full border border-border bg-brand-soft px-4 py-2">
-            <Image src={logo} alt="BookMe logo" width={64} height={64} />
+            <Image
+              src={logo}
+              alt="BookMe logo"
+              width={64}
+              height={64}
+              style={{ height: "auto" }}
+            />
           </div>
 
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-foreground">

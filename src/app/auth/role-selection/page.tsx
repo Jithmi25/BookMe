@@ -58,7 +58,13 @@ export default function RoleSelectionPage() {
     <main className="mx-auto flex min-h-screen w-full max-w-xl items-center px-6 py-10">
       <section className="w-full rounded-[2rem] border border-border bg-white p-8 shadow-xl shadow-brand/10">
         <div className="inline-flex w-fit items-center gap-3 rounded-full border border-border bg-brand-soft px-4 py-2">
-          <Image src={logo} alt="BookMe logo" width={34} height={34} />
+          <Image
+            src={logo}
+            alt="BookMe logo"
+            width={34}
+            height={34}
+            style={{ height: "auto" }}
+          />
           <span className="text-sm font-semibold text-brand-strong">
             BookMe
           </span>
