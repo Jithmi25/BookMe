@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuthContext } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useProviderBookings } from "@/hooks/useProviderBookings";
-import { ProviderBookingCard } from "@/components/provider/ProviderBookingCard";
+import { ProviderBookingCard } from "@/components/providers/ProviderBookingCard";
 import { BookingStatus } from "@/types/booking";
 
 const TABS: { key: BookingStatus | "all"; label: string }[] = [

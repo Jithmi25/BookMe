@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:dummy-providers": "node scripts/seedDummyProviders.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

@@ -102,4 +102,16 @@ vercel --prod=false
 vercel --prod
 ```
 
+### Seed Dummy Provider Data
+
+To quickly populate the homepage with sample providers:
+
+1. Download a Firebase service account key JSON file and save it as:
+   `scripts/serviceAccountKey.json`
+2. Run:
+
+```bash
+npm run seed:dummy-providers
+```
+
 ---
