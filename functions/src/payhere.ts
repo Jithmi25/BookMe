@@ -1,3 +1,78 @@
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+
+if (!admin.apps.length) admin.initializeApp();
+const db = admin.firestore();
+
+/**
+ * Minimal PayHere webhook handler.
+ * PayHere sends POST callbacks / IPN - payload structure depends on merchant settings.
+ * This handler expects a JSON body containing a booking or order identifier (try common fields).
+ */
+export const handlePayHereWebhook = functions.https.onRequest(
+  async (req, res) => {
+    try {
+      const body = req.method === "POST" ? req.body : req.query;
+
+      // Try common keys used by payment gateways / merchant callbacks
+      const bookingId =
+        body.bookingId ||
+        body.order_id ||
+        body.merchant_order_id ||
+        body.orderId;
+      const status = (
+        body.status ||
+        body.payment_status ||
+        body.transaction_status ||
+        ""
+      )
+        .toString()
+        .toLowerCase();
+      const transactionId =
+        body.transaction_id ||
+        body.payhere_payment_id ||
+        body.payment_id ||
+        body.txn_id ||
+        null;
+
+      if (!bookingId) {
+        // Not enough information; ack so PayHere doesn't keep retrying, but log for debugging
+        console.warn("PayHere webhook missing bookingId", body);
+        res.status(400).send("missing booking id");
+        return;
+      }
+
+      if (
+        status.includes("success") ||
+        status.includes("paid") ||
+        status.includes("completed")
+      ) {
+        await db.collection("bookings").doc(bookingId).update({
+          paymentStatus: "completed",
+          paymentId: transactionId,
+        });
+
+        // create a notification for the provider (the notifications trigger will also fire on update)
+        res.json({ received: true });
+        return;
+      }
+
+      // fallback: set paymentStatus to value provided
+      await db
+        .collection("bookings")
+        .doc(bookingId)
+        .update({
+          paymentStatus: status || "pending",
+          paymentId: transactionId,
+        });
+
+      res.json({ received: true });
+    } catch (err) {
+      console.error("handlePayHereWebhook error", err);
+      res.status(500).send("error");
+    }
+  },
+);
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { initializeApp, getApps } from "firebase-admin/app";
