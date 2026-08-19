@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import logo from "@/assest/images/logo.png";
-import { useAuthContext } from "@/context/AuthContext.tsx";
+import { useAuthContext } from "@/context/AuthContext";
 
 export default function SignUpPage() {
   const router = useRouter();

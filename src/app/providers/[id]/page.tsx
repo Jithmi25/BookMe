@@ -38,6 +38,7 @@ export default function PublicProviderProfilePage() {
   }
 
   function handleBookNow() {
+    if (!provider || provider === "not-found") return;
     if (!firebaseUser) {
       router.push(
         `/auth/signin?redirect=/bookings/create/${provider.providerId}`,

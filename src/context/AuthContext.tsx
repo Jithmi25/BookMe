@@ -160,24 +160,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   // Called from /auth/role-selection once the user picks customer/provider.
-  // Creates the users/{uid} Firestore doc, which onSnapshot above will pick up.
+  // Use direct Firestore writes so this works on the free plan without deploying
+  // a callable Cloud Function.
   async function completeRoleSelection(role: UserRole, name: string) {
     if (!firebaseUser) throw new Error("Not signed in");
-    const userDocRef = doc(db, "users", firebaseUser.uid);
-    await setDoc(
-      userDocRef,
-      {
-        role,
-        name,
-        email: firebaseUser.email ?? null,
-        phone: firebaseUser.phoneNumber ?? null,
-        profilePhoto: null,
-        suspended: false,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
+
+    try {
+      await setDoc(
+        doc(db, "users", firebaseUser.uid),
+        {
+          role,
+          name,
+          email: firebaseUser.email ?? null,
+          phone: firebaseUser.phoneNumber ?? null,
+          profilePhoto: null,
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save profile";
+      setError(message);
+      throw err;
+    }
   }
 
   async function signOut() {

@@ -7,6 +7,7 @@ export interface AppUser {
   email: string | null;
   phone: string | null;
   profilePhoto: string | null;
+  suspended?: boolean;
   createdAt: number;
   updatedAt: number;
 }
