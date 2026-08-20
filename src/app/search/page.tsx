@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useProviders, ProviderFilters as Filters } from "@/hooks/useProviders";
 import { ProviderFilters } from "@/components/providers/ProviderFilters";
@@ -35,6 +36,20 @@ function filtersToSearchString(filters: Filters): string {
 }
 
 export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto w-full max-w-6xl px-6 py-10">
+          <p className="text-center text-foreground/60">Loading providers...</p>
+        </main>
+      }
+    >
+      <SearchInner />
+    </Suspense>
+  );
+}
+
+function SearchInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const filters = parseFiltersFromParams(searchParams);
