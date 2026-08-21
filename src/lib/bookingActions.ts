@@ -1,33 +1,16 @@
-import { httpsCallable } from "firebase/functions";
-import { functions } from "@/lib/firebase";
-
-interface SuccessResult {
-  success: true;
-}
+import { authedFetch } from "@/lib/authedFetch";
 
 export async function acceptBooking(
   bookingId: string,
   amount: number,
 ): Promise<void> {
-  const call = httpsCallable<
-    { bookingId: string; amount: number },
-    SuccessResult
-  >(functions, "acceptBooking");
-  await call({ bookingId, amount });
+  await authedFetch("/api/bookings/accept", { bookingId, amount });
 }
 
 export async function rejectBooking(bookingId: string): Promise<void> {
-  const call = httpsCallable<{ bookingId: string }, SuccessResult>(
-    functions,
-    "rejectBooking",
-  );
-  await call({ bookingId });
+  await authedFetch("/api/bookings/reject", { bookingId });
 }
 
 export async function completeBooking(bookingId: string): Promise<void> {
-  const call = httpsCallable<{ bookingId: string }, SuccessResult>(
-    functions,
-    "completeBooking",
-  );
-  await call({ bookingId });
+  await authedFetch("/api/bookings/complete", { bookingId });
 }

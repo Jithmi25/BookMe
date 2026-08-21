@@ -1,7 +1,6 @@
-import { httpsCallable } from "firebase/functions";
-import { functions } from "@/lib/firebase";
+import { authedFetch } from "@/lib/authedFetch";
 
-interface PayHereHashResult {
+export interface PayHereHashResult {
   merchantId: string;
   orderId: string;
   amount: string;
@@ -12,10 +11,7 @@ interface PayHereHashResult {
 export async function getPayHereHash(
   bookingId: string,
 ): Promise<PayHereHashResult> {
-  const call = httpsCallable<{ bookingId: string }, PayHereHashResult>(
-    functions,
-    "createPayHereHash",
-  );
-  const result = await call({ bookingId });
-  return result.data;
+  return authedFetch<PayHereHashResult>("/api/payhere/create-hash", {
+    bookingId,
+  });
 }
