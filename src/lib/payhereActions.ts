@@ -1,5 +1,7 @@
 import { authedFetch } from "@/lib/authedFetch";
 
+export const runtime = "nodejs";
+
 export interface PayHereHashResult {
   merchantId: string;
   orderId: string;

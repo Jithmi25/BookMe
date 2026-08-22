@@ -3,7 +3,9 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { requireAuth, ApiAuthError } from "@/lib/apiAuth";
 
-const COMMISSION_RATE = 0.1; // 10% — adjust here if it needs to vary by category later
+export const runtime = "nodejs";
+
+const COMMISSION_RATE = 0.1;
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,10 +13,16 @@ export async function POST(req: NextRequest) {
 
     const { bookingId, amount } = await req.json();
     if (typeof bookingId !== "string") {
-      return NextResponse.json({ error: "bookingId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "bookingId is required" },
+        { status: 400 },
+      );
     }
     if (typeof amount !== "number" || amount <= 0) {
-      return NextResponse.json({ error: "A valid amount is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "A valid amount is required" },
+        { status: 400 },
+      );
     }
 
     const bookingRef = adminDb.collection("bookings").doc(bookingId);
@@ -25,7 +33,10 @@ export async function POST(req: NextRequest) {
     const booking = bookingSnap.data()!;
 
     if (booking.providerId !== decoded.uid) {
-      return NextResponse.json({ error: "You don't own this booking" }, { status: 403 });
+      return NextResponse.json(
+        { error: "You don't own this booking" },
+        { status: 403 },
+      );
     }
     if (booking.status !== "pending") {
       return NextResponse.json(

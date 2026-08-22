@@ -8,6 +8,8 @@ import {
 import { db } from "@/lib/firebase";
 import { PaymentMethod } from "@/types/booking";
 
+export const runtime = "nodejs";
+
 export interface CreateBookingInput {
   customerId: string;
   customerName: string;

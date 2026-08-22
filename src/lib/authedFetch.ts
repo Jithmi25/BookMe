@@ -1,5 +1,7 @@
 import { auth } from "@/lib/firebase";
 
+export const runtime = "nodejs";
+
 /**
  * POSTs JSON to one of our /api/* route handlers with the current user's
  * Firebase ID token attached, mirroring what httpsCallable used to do

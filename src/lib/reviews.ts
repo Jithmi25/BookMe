@@ -1,6 +1,8 @@
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+export const runtime = "nodejs";
+
 export interface CreateReviewInput {
   bookingId: string;
   customerId: string;

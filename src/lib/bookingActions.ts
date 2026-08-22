@@ -1,5 +1,7 @@
 import { authedFetch } from "@/lib/authedFetch";
 
+export const runtime = "nodejs";
+
 export async function acceptBooking(
   bookingId: string,
   amount: number,

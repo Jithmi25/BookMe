@@ -2,6 +2,8 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { authedFetch } from "@/lib/authedFetch";
 
+export const runtime = "nodejs";
+
 export async function verifyProvider(
   providerId: string,
   verificationType: "nic" | "photo",

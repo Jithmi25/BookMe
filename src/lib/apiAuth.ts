@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import type { DecodedIdToken } from "firebase-admin/auth";
 import { adminAuth } from "@/lib/firebaseAdmin";
 
+export const runtime = "nodejs";
+
 export class ApiAuthError extends Error {
   status: number;
   constructor(status: number, message: string) {
