@@ -35,15 +35,46 @@ export default function ReviewsListPage() {
       }
       setProvider(providerSnap.data() as Provider);
 
-      const q = query(
-        collection(db, "reviews"),
-        where("providerId", "==", params.providerId),
-        orderBy("createdAt", "desc"),
-        limit(50),
-      );
-      const snap = await getDocs(q);
-      setReviews(snap.docs.map((d) => d.data() as Review));
-      setLoading(false);
+      try {
+        const q = query(
+          collection(db, "reviews"),
+          where("providerId", "==", params.providerId),
+          orderBy("createdAt", "desc"),
+          limit(50),
+        );
+        const snap = await getDocs(q);
+        setReviews(snap.docs.map((d) => d.data() as Review));
+      } catch (err) {
+        console.warn(
+          "Retrying reviews list query without composite index:",
+          err,
+        );
+        try {
+          const fallbackQ = query(
+            collection(db, "reviews"),
+            where("providerId", "==", params.providerId),
+            limit(50),
+          );
+          const snap = await getDocs(fallbackQ);
+          const list = snap.docs.map((d) => d.data() as Review);
+          list.sort((a, b) => {
+            const timeA =
+              typeof a.createdAt === "number"
+                ? a.createdAt
+                : new Date(a.createdAt as unknown as string).getTime() || 0;
+            const timeB =
+              typeof b.createdAt === "number"
+                ? b.createdAt
+                : new Date(b.createdAt as unknown as string).getTime() || 0;
+            return timeB - timeA;
+          });
+          setReviews(list);
+        } catch (fallbackErr) {
+          console.error("Failed to load reviews list:", fallbackErr);
+        }
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, [params.providerId]);

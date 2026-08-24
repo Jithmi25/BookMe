@@ -19,18 +19,43 @@ export function ReviewsSection({ providerId }: { providerId: string }) {
 
   useEffect(() => {
     async function load() {
-      // Requires a composite index (providerId ==, createdAt desc) — Firestore
-      // will throw a helpful error with a direct "create index" link the first
-      // time this runs against real data if it's missing.
-      const q = query(
-        collection(db, "reviews"),
-        where("providerId", "==", providerId),
-        orderBy("createdAt", "desc"),
-        limit(10),
-      );
-      const snap = await getDocs(q);
-      setReviews(snap.docs.map((d) => d.data() as Review));
-      setLoading(false);
+      try {
+        const q = query(
+          collection(db, "reviews"),
+          where("providerId", "==", providerId),
+          orderBy("createdAt", "desc"),
+          limit(10),
+        );
+        const snap = await getDocs(q);
+        setReviews(snap.docs.map((d) => d.data() as Review));
+      } catch (err) {
+        console.warn("Retrying reviews query without composite index:", err);
+        try {
+          const fallbackQ = query(
+            collection(db, "reviews"),
+            where("providerId", "==", providerId),
+            limit(10),
+          );
+          const snap = await getDocs(fallbackQ);
+          const list = snap.docs.map((d) => d.data() as Review);
+          list.sort((a, b) => {
+            const timeA =
+              typeof a.createdAt === "number"
+                ? a.createdAt
+                : new Date(a.createdAt as unknown as string).getTime() || 0;
+            const timeB =
+              typeof b.createdAt === "number"
+                ? b.createdAt
+                : new Date(b.createdAt as unknown as string).getTime() || 0;
+            return timeB - timeA;
+          });
+          setReviews(list);
+        } catch (fallbackErr) {
+          console.error("Failed to load reviews:", fallbackErr);
+        }
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, [providerId]);

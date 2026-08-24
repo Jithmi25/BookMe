@@ -36,13 +36,14 @@ export function useProviders(filters?: ProviderFilters) {
   if (filters?.category) {
     constraints.push(where("skills", "array-contains", filters.category));
   }
-  constraints.push(orderBy("ratingAvg", "desc"));
 
   const q = query(collection(db, "providers"), ...constraints);
   const [snapshot, loading, error] = useCollection(q);
 
   let providers: Provider[] =
     snapshot?.docs.map((d) => d.data() as Provider) ?? [];
+
+  providers.sort((a, b) => (b.ratingAvg || 0) - (a.ratingAvg || 0));
 
   if (filters?.priceMin !== undefined) {
     providers = providers.filter((p) => p.priceMax >= filters.priceMin!);

@@ -23,7 +23,6 @@ function BookingHistoryContent() {
     ? query(
         collection(db, "bookings"),
         where("customerId", "==", firebaseUser.uid),
-        orderBy("createdAt", "desc"),
       )
     : null;
   const [snapshot, loading, error] = useCollection(q);
@@ -32,6 +31,32 @@ function BookingHistoryContent() {
     bookingId: d.id,
     ...d.data(),
   })) as Booking[] | undefined;
+
+  bookings?.sort((a, b) => {
+    const getMs = (val: unknown): number => {
+      if (!val) return 0;
+      if (typeof val === "number") return val;
+      if (
+        typeof val === "object" &&
+        val !== null &&
+        "toMillis" in val &&
+        typeof (val as { toMillis: () => number }).toMillis === "function"
+      ) {
+        return (val as { toMillis: () => number }).toMillis();
+      }
+      if (
+        typeof val === "object" &&
+        val !== null &&
+        "seconds" in val &&
+        typeof (val as { seconds: number }).seconds === "number"
+      ) {
+        return (val as { seconds: number }).seconds * 1000;
+      }
+      const parsed = new Date(val as string | number).getTime();
+      return isNaN(parsed) ? 0 : parsed;
+    };
+    return getMs(b.createdAt) - getMs(a.createdAt);
+  });
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
