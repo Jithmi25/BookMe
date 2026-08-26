@@ -6,12 +6,16 @@ import { getFirestore } from "firebase-admin/firestore";
 function getAdminApp(): App {
   if (getApps().length) return getApps()[0];
 
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
+  const projectId =
+    process.env.FIREBASE_ADMIN_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+    process.env.FIREBASE_PROJECT_ID ||
+    "bookme-dev-cfc43";
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(
-    /\\n/g,
-    "\n",
-  );
+    /^"(.*)"$/,
+    "$1",
+  )?.replace(/\\n/g, "\n");
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(

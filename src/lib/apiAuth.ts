@@ -2,6 +2,16 @@ import { NextRequest } from "next/server";
 import { jwtVerify, createRemoteJWKSet } from "jose";
 
 const PROJECT_ID = process.env.FIREBASE_ADMIN_PROJECT_ID!;
+function getProjectId(): string {
+  return (
+    process.env.FIREBASE_ADMIN_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.GCP_PROJECT ||
+    process.env.GCLOUD_PROJECT ||
+    "bookme-dev-cfc43"
+  );
+}
 
 // Google's public keys for verifying Firebase ID tokens (RS256-signed JWTs).
 // This replaces firebase-admin/auth's verifyIdToken() specifically to avoid
@@ -14,6 +24,7 @@ const PROJECT_ID = process.env.FIREBASE_ADMIN_PROJECT_ID!;
 const JWKS = createRemoteJWKSet(
   new URL(
     "https://www.googleapis.com/service_accounts/v1/jwk/[email protected]",
+    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
   ),
 );
 
@@ -44,10 +55,14 @@ export async function requireAuth(req: NextRequest): Promise<VerifiedUser> {
     throw new ApiAuthError(401, "Sign in required");
   }
 
+  const projectId = getProjectId();
+
   try {
     const { payload } = await jwtVerify(match[1], JWKS, {
       issuer: `https://securetoken.google.com/${PROJECT_ID}`,
       audience: PROJECT_ID,
+      issuer: `https://securetoken.google.com/${projectId}`,
+      audience: projectId,
     });
 
     if (!payload.sub) {
@@ -56,6 +71,8 @@ export async function requireAuth(req: NextRequest): Promise<VerifiedUser> {
 
     return { uid: payload.sub, ...payload } as VerifiedUser;
   } catch {
+  } catch (err) {
+    console.error("requireAuth token verification error:", err);
     throw new ApiAuthError(401, "Invalid or expired session");
   }
 }
