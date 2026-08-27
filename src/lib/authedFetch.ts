@@ -15,9 +15,9 @@ export async function authedFetch<T = { success: true }>(
   if (!user) {
     throw new Error("Sign in required");
   }
-  const token = await user.getIdToken();
+  let token = await user.getIdToken();
 
-  const res = await fetch(path, {
+  let res = await fetch(path, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -25,6 +25,19 @@ export async function authedFetch<T = { success: true }>(
     },
     body: JSON.stringify(body),
   });
+
+  if (res.status === 401) {
+    // Retry once with a force-refreshed token in case it expired
+    token = await user.getIdToken(true);
+    res = await fetch(path, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+  }
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
