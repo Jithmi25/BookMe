@@ -1,27 +1,76 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 import logo from "@/assest/images/logo.png";
 import { useAuthContext } from "@/context/AuthContext";
 
 export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center">
+          <p className="text-foreground/70">Loading...</p>
+        </main>
+      }
+    >
+      <SignInForm />
+    </Suspense>
+  );
+}
+
+function SignInForm() {
   const router = useRouter();
-  const { signInWithEmail, error } = useAuthContext();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
+  const { signInWithEmail, appUser, loading: authLoading, error } = useAuthContext();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // If already authenticated and profile loaded, redirect to appropriate destination
+  useEffect(() => {
+    if (!authLoading && appUser) {
+      if (redirectParam) {
+        router.replace(redirectParam);
+      } else if (appUser.role === "provider") {
+        router.replace("/provider/dashboard");
+      } else if (appUser.role === "admin") {
+        router.replace("/admin/dashboard");
+      } else if (appUser.role === "customer") {
+        router.replace("/");
+      } else {
+        router.replace("/auth/role-selection");
+      }
+    }
+  }, [authLoading, appUser, redirectParam, router]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await signInWithEmail(email, password);
-      router.push("/");
+      const user = await signInWithEmail(email, password);
+      // Fetch role immediately to route without waiting for onSnapshot
+      const snap = await getDoc(doc(db, "users", user.uid));
+      const role = snap.exists() ? snap.data().role : null;
+
+      if (redirectParam) {
+        router.push(redirectParam);
+      } else if (role === "provider") {
+        router.push("/provider/dashboard");
+      } else if (role === "admin") {
+        router.push("/admin/dashboard");
+      } else if (role === "customer") {
+        router.push("/");
+      } else {
+        router.push("/auth/role-selection");
+      }
     } catch {
       // error already captured in AuthContext's `error` state
     } finally {

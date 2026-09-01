@@ -45,7 +45,13 @@ export function ProtectedRoute({
 
     // Signed in with a role, but not one this page allows
     if (allowedRoles && !allowedRoles.includes(appUser.role)) {
-      router.push("/");
+      if (appUser.role === "provider") {
+        router.push("/provider/dashboard");
+      } else if (appUser.role === "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/");
+      }
     }
   }, [loading, firebaseUser, appUser, allowedRoles, router]);
 

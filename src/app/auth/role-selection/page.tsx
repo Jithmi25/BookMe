@@ -39,10 +39,16 @@ function RoleSelectionInner() {
     }
   }, [loading, firebaseUser, router]);
 
-  // Already has a role → nothing to do here
+  // Already has a role → redirect to appropriate dashboard
   useEffect(() => {
     if (!loading && appUser?.role) {
-      router.replace("/");
+      if (appUser.role === "provider") {
+        router.replace("/provider/dashboard");
+      } else if (appUser.role === "admin") {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/");
+      }
     }
   }, [loading, appUser, router]);
 
@@ -51,8 +57,11 @@ function RoleSelectionInner() {
     setSubmitting(true);
     try {
       await completeRoleSelection(selectedRole, name.trim());
-      // Phase 3 (Days 7-9) replaces this with the real onboarding forms.
-      router.push("/");
+      if (selectedRole === "provider") {
+        router.push("/provider/dashboard");
+      } else {
+        router.push("/");
+      }
     } catch {
       // error already captured in AuthContext's `error` state
     } finally {

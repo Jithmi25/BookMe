@@ -15,10 +15,17 @@ export function Header() {
     router.push("/");
   }
 
+  const homeHref =
+    appUser?.role === "provider"
+      ? "/provider/dashboard"
+      : appUser?.role === "admin"
+        ? "/admin/dashboard"
+        : "/";
+
   return (
     <header className="border-b border-border bg-white">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={homeHref} className="flex items-center gap-2">
           <Image
             src={logo}
             alt="BookMe logo"
@@ -74,12 +81,34 @@ export function Header() {
                     Dashboard
                   </Link>
                   <Link
+                    href="/provider/bookings"
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground"
+                  >
+                    Bookings
+                  </Link>
+                  <Link
                     href="/providers/profile/view"
                     className="text-sm font-medium text-foreground/80 hover:text-foreground"
                   >
                     My profile
                   </Link>
                 </>
+              )}
+              {appUser.role === "customer" && (
+                <Link
+                  href="/bookings/history"
+                  className="text-sm font-medium text-foreground/80 hover:text-foreground"
+                >
+                  My bookings
+                </Link>
+              )}
+              {appUser.role === "admin" && (
+                <Link
+                  href="/admin/dashboard"
+                  className="text-sm font-medium text-foreground/80 hover:text-foreground"
+                >
+                  Admin
+                </Link>
               )}
               <span className="text-sm text-foreground/60">
                 Hi, {appUser.name.split(" ")[0]}

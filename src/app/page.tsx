@@ -1,13 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useProviders, ProviderFilters as Filters } from "@/hooks/useProviders";
 import { ProviderFilters } from "@/components/providers/ProviderFilters";
 import { ProviderCard } from "@/components/providers/ProviderCard";
+import { useAuthContext } from "@/context/AuthContext";
 
 export default function HomePage() {
+  const router = useRouter();
+  const { appUser, loading: authLoading } = useAuthContext();
   const [filters, setFilters] = useState<Filters>({});
   const { providers, loading, error } = useProviders(filters);
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (appUser?.role === "provider") {
+        router.replace("/provider/dashboard");
+      } else if (appUser?.role === "admin") {
+        router.replace("/admin/dashboard");
+      }
+    }
+  }, [authLoading, appUser, router]);
+
+  if (authLoading || appUser?.role === "provider" || appUser?.role === "admin") {
+    return (
+      <main className="mx-auto w-full max-w-6xl px-6 py-10">
+        <p className="text-center text-foreground/60">Loading...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
